@@ -22,7 +22,7 @@ const dummyMessages = [
 ]
 const HomeScreen = () => {
     const [result, setResult] = useState('');
-    const [recording, setRecording] = useState(false);
+    const [recording, setRecording] = useState(true);
     const [loading, setLoading] = useState(false);
     const [messages, setMessages] = useState(dummyMessages);
     const [speaking, setSpeaking] = useState(false);
@@ -37,6 +37,12 @@ const HomeScreen = () => {
         // } catch (error) {
         //     console.log('error', error);
         // }
+    };
+    const clear = () => {
+        Tts.stop();
+        setSpeaking(false);
+        setLoading(false);
+        setMessages([]);
     };
     return (
         <View className="flex-1 bg-white">
@@ -124,7 +130,9 @@ const HomeScreen = () => {
                 <View className="flex justify-center items-center">
                     {
                         recording ? (
-                            <TouchableOpacity className="space-y-2" onPress={stopRecording}>
+                            <TouchableOpacity className="space-y-2"
+                            // onPress={stopRecording}
+                            >
                                 {/* recording stop button */}
                                 <Image
                                     className="rounded-full"
@@ -133,13 +141,35 @@ const HomeScreen = () => {
                                 />
                             </TouchableOpacity>
                         ) : (
-                            <TouchableOpacity onPress={startRecording}>
+                            <TouchableOpacity
+                            //onPress={startRecording}
+                            >
                                 {/* recording start button */}
                                 <Image
                                     className="rounded-full"
                                     source={require('../../assets/images/recordingIcon.png')}
                                     style={{ width: hp(10), height: hp(10) }}
                                 />
+                            </TouchableOpacity>
+                        )
+                    }
+                    {
+                        messages.length > 0 && (
+                            <TouchableOpacity
+                                onPress={clear}
+                                className="bg-neutral-400 rounded-3xl p-2 absolute right-10"
+                            >
+                                <Text className="text-white font-semibold">Clear</Text>
+                            </TouchableOpacity>
+                        )
+                    }
+                    {
+                        speaking && (
+                            <TouchableOpacity
+                                //onPress={stopSpeaking}
+                                className="bg-red-400 rounded-3xl p-2 absolute left-10"
+                            >
+                                <Text className="text-white font-semibold">Stop</Text>
                             </TouchableOpacity>
                         )
                     }
