@@ -25,6 +25,16 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "expo": {
+      "plugins": [
+        "@react-native-voice/voice"
+      ]
+    },
+    "extra": {
+      "eas": {
+        "projectId": "52d734f6-5346-4d68-aedb-ecf94f5c7b24"
+      }
     }
   }
 }
