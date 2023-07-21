@@ -28,6 +28,23 @@ const HomeScreen = () => {
     const [speaking, setSpeaking] = useState(false);
     // const scrollViewRef = useRef();
 
+    const speechStartHandler = e => {
+        console.log('speech start event', e);
+    };
+    const speechEndHandler = e => {
+        setRecording(false);
+        console.log('speech stop event', e);
+    };
+    const speechResultsHandler = e => {
+        console.log('speech event: ', e);
+        const text = e.value[0];
+        setResult(text);
+
+    };
+
+    const speechErrorHandler = e => {
+        console.log('speech error: ', e);
+    }
     const startRecording = async () => {
         // setRecording(true);
         // Tts.stop();
@@ -44,6 +61,22 @@ const HomeScreen = () => {
         setLoading(false);
         setMessages([]);
     };
+    useEffect(() => {
+
+        // voice handler events
+        Voice.onSpeechStart = speechStartHandler;
+        Voice.onSpeechEnd = speechEndHandler;
+        Voice.onSpeechResults = speechResultsHandler;
+        Voice.onSpeechError = speechErrorHandler;
+
+
+
+
+        return () => {
+            // destroy the voice instance after component unmounts
+            Voice.destroy().then(Voice.removeAllListeners);
+        };
+    }, []);
     return (
         <View className="flex-1 bg-white">
             <SafeAreaView className="flex-1 flex mx-5">
