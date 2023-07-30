@@ -2,6 +2,10 @@ import React, { useState, useRef, useEffect } from 'react'
 import { SafeAreaView, Text, View, Image, ScrollView, TouchableOpacity } from 'react-native'
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import Features from '../components/Features';
+import Voice from '@react-native-community/voice';
+import { Audio } from 'expo-av';
+
+
 const dummyMessages = [
     {
         role: 'user',
@@ -45,15 +49,35 @@ const HomeScreen = () => {
     const speechErrorHandler = e => {
         console.log('speech error: ', e);
     }
+    const stopRecording = async () => {
+        console.log('Stopping recording..');
+        setRecording(undefined);
+        await recording.stopAndUnloadAsync();
+        await Audio.setAudioModeAsync(
+            {
+                allowsRecordingIOS: false,
+            }
+        );
+        const uri = recording.getURI();
+        console.log('Recording stopped and stored at', uri);
+    }
     const startRecording = async () => {
-        // setRecording(true);
-        // Tts.stop();
-        // try {
-        //     await Voice.start('en-GB'); // en-US
+        try {
+            console.log('Requesting permissions..');
+            await Audio.requestPermissionsAsync();
+            await Audio.setAudioModeAsync({
+                allowsRecordingIOS: true,
+                playsInSilentModeIOS: true,
+            });
 
-        // } catch (error) {
-        //     console.log('error', error);
-        // }
+            console.log('Starting recording..');
+            const { recording } = await Audio.Recording.createAsync(Audio.RecordingOptionsPresets.HIGH_QUALITY
+            );
+            setRecording(recording);
+            console.log('Recording started');
+        } catch (err) {
+            console.error('Failed to start recording', err);
+        }
     };
     const clear = () => {
         Tts.stop();
