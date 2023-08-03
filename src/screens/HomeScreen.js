@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react'
 import { SafeAreaView, Text, View, Image, ScrollView, TouchableOpacity } from 'react-native'
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import Features from '../components/Features';
+import Voice from '@react-native-community/voice';
 
 import { Audio } from 'expo-av';
 
@@ -31,45 +32,105 @@ const HomeScreen = () => {
     const [messages, setMessages] = useState(dummyMessages);
     const [speaking, setSpeaking] = useState(false);
     // const scrollViewRef = useRef();
+    const speechStartHandler = e => {
+        console.log('speech start event', e);
+    };
+    const speechEndHandler = e => {
+        setRecording(false);
+        console.log('speech stop event', e);
+    };
+    const speechResultsHandler = e => {
+        console.log('speech event: ', e);
+        const text = e.value[0];
+        setResult(text);
 
+    };
+
+    const speechErrorHandler = e => {
+        console.log('speech error: ', e);
+    }
 
 
     const startRecording = async () => {
+        setRecording(true);
+        Tts.stop();
         try {
-            console.log('Requesting permissions..');
-            await Audio.requestPermissionsAsync();
-            await Audio.setAudioModeAsync({
-                allowsRecordingIOS: true,
-                playsInSilentModeIOS: true,
-            });
+            await Voice.start('en-GB'); // en-US
 
-            console.log('Starting recording..');
-            const { recording } = await Audio.Recording.createAsync(Audio.RecordingOptionsPresets.HIGH_QUALITY
-            );
-            setRecording(true);
-            console.log('Recording started');
-        } catch (err) {
-            console.error('Failed to start recording', err);
+        } catch (error) {
+            console.log('error', error);
         }
     };
     const stopRecording = async () => {
-        console.log('Stopping recording..');
-        setRecording(false);
-        await recording.stopAndUnloadAsync();
-        await Audio.setAudioModeAsync(
-            {
-                allowsRecordingIOS: false,
-            }
-        );
-        const uri = recording.getURI();
-        console.log('Recording stopped and stored at', uri);
-    }
+
+        try {
+            await Voice.stop();
+            setRecording(false);
+            fetchResponse();
+        } catch (error) {
+            console.log('error', error);
+        }
+    };
     const clear = () => {
         Tts.stop();
         setSpeaking(false);
         setLoading(false);
         setMessages([]);
     };
+    const fetchResponse = async () => {
+        if (result.trim().length > 0) {
+            setLoading(true);
+            let newMessages = [...messages];
+            newMessages.push({ role: 'user', content: result.trim() });
+            setMessages([...newMessages]);
+
+            // scroll to the bottom of the view
+            updateScrollView();
+
+            // fetching response from chatGPT with our prompt and old messages
+            apiCall(result.trim(), newMessages).then(res => {
+                console.log('got api data');
+                setLoading(false);
+                if (res.success) {
+                    setMessages([...res.data]);
+                    setResult('');
+                    updateScrollView();
+
+                    // now play the response to user
+                    startTextToSpeach(res.data[res.data.length - 1]);
+
+                } else {
+                    Alert.alert('Error', res.msg);
+                }
+
+            })
+        }
+    }
+    useEffect(() => {
+
+        // voice handler events
+        Voice.onSpeechStart = speechStartHandler;
+        Voice.onSpeechEnd = speechEndHandler;
+        Voice.onSpeechResults = speechResultsHandler;
+        Voice.onSpeechError = speechErrorHandler;
+
+        // text to speech events
+        Tts.setDefaultLanguage('en-IE');
+        Tts.addEventListener('tts-start', event => console.log('start', event));
+        Tts.addEventListener('tts-finish', event => { console.log('finish', event); setSpeaking(false) });
+        Tts.addEventListener('tts-cancel', event => console.log('cancel', event));
+
+
+
+        return () => {
+            // destroy the voice instance after component unmounts
+            Voice.destroy().then(Voice.removeAllListeners);
+        };
+    }, []);
+
+
+
+
 
     return (
         <View className="flex-1 bg-white">
