@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react'
 import { SafeAreaView, Text, View, Image, ScrollView, TouchableOpacity } from 'react-native'
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import Features from '../components/Features';
-import Voice from '@react-native-community/voice';
+
 import { Audio } from 'expo-av';
 
 
@@ -26,41 +26,14 @@ const dummyMessages = [
 ]
 const HomeScreen = () => {
     const [result, setResult] = useState('');
-    const [recording, setRecording] = useState(true);
+    const [recording, setRecording] = useState(false);
     const [loading, setLoading] = useState(false);
     const [messages, setMessages] = useState(dummyMessages);
     const [speaking, setSpeaking] = useState(false);
     // const scrollViewRef = useRef();
 
-    const speechStartHandler = e => {
-        console.log('speech start event', e);
-    };
-    const speechEndHandler = e => {
-        setRecording(false);
-        console.log('speech stop event', e);
-    };
-    const speechResultsHandler = e => {
-        console.log('speech event: ', e);
-        const text = e.value[0];
-        setResult(text);
 
-    };
 
-    const speechErrorHandler = e => {
-        console.log('speech error: ', e);
-    }
-    const stopRecording = async () => {
-        console.log('Stopping recording..');
-        setRecording(undefined);
-        await recording.stopAndUnloadAsync();
-        await Audio.setAudioModeAsync(
-            {
-                allowsRecordingIOS: false,
-            }
-        );
-        const uri = recording.getURI();
-        console.log('Recording stopped and stored at', uri);
-    }
     const startRecording = async () => {
         try {
             console.log('Requesting permissions..');
@@ -73,34 +46,31 @@ const HomeScreen = () => {
             console.log('Starting recording..');
             const { recording } = await Audio.Recording.createAsync(Audio.RecordingOptionsPresets.HIGH_QUALITY
             );
-            setRecording(recording);
+            setRecording(true);
             console.log('Recording started');
         } catch (err) {
             console.error('Failed to start recording', err);
         }
     };
+    const stopRecording = async () => {
+        console.log('Stopping recording..');
+        setRecording(false);
+        await recording.stopAndUnloadAsync();
+        await Audio.setAudioModeAsync(
+            {
+                allowsRecordingIOS: false,
+            }
+        );
+        const uri = recording.getURI();
+        console.log('Recording stopped and stored at', uri);
+    }
     const clear = () => {
         Tts.stop();
         setSpeaking(false);
         setLoading(false);
         setMessages([]);
     };
-    useEffect(() => {
 
-        // voice handler events
-        Voice.onSpeechStart = speechStartHandler;
-        Voice.onSpeechEnd = speechEndHandler;
-        Voice.onSpeechResults = speechResultsHandler;
-        Voice.onSpeechError = speechErrorHandler;
-
-
-
-
-        return () => {
-            // destroy the voice instance after component unmounts
-            Voice.destroy().then(Voice.removeAllListeners);
-        };
-    }, []);
     return (
         <View className="flex-1 bg-white">
             <SafeAreaView className="flex-1 flex mx-5">
@@ -188,7 +158,7 @@ const HomeScreen = () => {
                     {
                         recording ? (
                             <TouchableOpacity className="space-y-2"
-                            // onPress={stopRecording}
+                                onPress={stopRecording}
                             >
                                 {/* recording stop button */}
                                 <Image
@@ -199,7 +169,7 @@ const HomeScreen = () => {
                             </TouchableOpacity>
                         ) : (
                             <TouchableOpacity
-                            //onPress={startRecording}
+                                onPress={startRecording}
                             >
                                 {/* recording start button */}
                                 <Image

@@ -15,26 +15,40 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.iknowsaint.eblogredo"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.iknowsaint.eblogredo",
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "expo": {
-      "plugins": [
-        "@react-native-voice/voice"
+    "plugins": [
+      [
+        "@react-native-voice/voice",
+        {
+          "microphonePermission": "Allow Voice to Text Tutorial to access the microphone",
+          "speechRecognitionPermission": "Allow Voice to Text Tutorial to securely recognize user speech"
+        }
       ]
-    },
+    ],
     "extra": {
       "eas": {
         "projectId": "52d734f6-5346-4d68-aedb-ecf94f5c7b24"
       }
+    }
+  },
+  "extra": {
+    "eas": {
+      "projectId": "52d734f6-5346-4d68-aedb-ecf94f5c7b24"
     }
   }
 }
