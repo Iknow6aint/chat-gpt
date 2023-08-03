@@ -31,7 +31,7 @@ const HomeScreen = () => {
     const [loading, setLoading] = useState(false);
     const [messages, setMessages] = useState(dummyMessages);
     const [speaking, setSpeaking] = useState(false);
-    // const scrollViewRef = useRef();
+    const scrollViewRef = useRef();
     const speechStartHandler = e => {
         console.log('speech start event', e);
     };
@@ -106,6 +106,22 @@ const HomeScreen = () => {
             })
         }
     }
+    const updateScrollView = () => {
+        setTimeout(() => {
+            scrollViewRef?.current?.scrollToEnd({ animated: true });
+        }, 200)
+    }
+
+    const startTextToSpeach = message => {
+        if (!message.content.includes('https')) {
+            setSpeaking(true);
+            // playing response with the voice id and voice speed
+            Tts.speak(message.content, {
+                iosVoiceId: 'com.apple.ttsbundle.Samantha-compact',
+                rate: 0.5,
+            });
+        }
+    }
     useEffect(() => {
 
         // voice handler events
@@ -150,7 +166,7 @@ const HomeScreen = () => {
                                 style={{ height: hp(58) }}
                                 className="bg-neutral-200 rounded-3xl p-4">
                                 <ScrollView
-                                    //ref={scrollViewRef}
+                                    ref={scrollViewRef}
                                     bounces={false}
                                     className="space-y-4"
                                     showsVerticalScrollIndicator={false}
@@ -217,29 +233,35 @@ const HomeScreen = () => {
                 {/* recording, clear and stop buttons */}
                 <View className="flex justify-center items-center">
                     {
-                        recording ? (
-                            <TouchableOpacity className="space-y-2"
-                                onPress={stopRecording}
-                            >
-                                {/* recording stop button */}
-                                <Image
-                                    className="rounded-full"
-                                    source={require('../../assets/images/voiceLoading.gif')}
-                                    style={{ width: hp(10), height: hp(10) }}
-                                />
-                            </TouchableOpacity>
-                        ) : (
-                            <TouchableOpacity
-                                onPress={startRecording}
-                            >
-                                {/* recording start button */}
-                                <Image
-                                    className="rounded-full"
-                                    source={require('../../assets/images/recordingIcon.png')}
-                                    style={{ width: hp(10), height: hp(10) }}
-                                />
-                            </TouchableOpacity>
-                        )
+                        loading ? (
+                            <Image
+                                source={require('../../assets/images/loading.gif')}
+                                style={{ width: hp(10), height: hp(10) }}
+                            />
+                        ) :
+                            recording ? (
+                                <TouchableOpacity className="space-y-2"
+                                    onPress={stopRecording}
+                                >
+                                    {/* recording stop button */}
+                                    <Image
+                                        className="rounded-full"
+                                        source={require('../../assets/images/voiceLoading.gif')}
+                                        style={{ width: hp(10), height: hp(10) }}
+                                    />
+                                </TouchableOpacity>
+                            ) : (
+                                <TouchableOpacity
+                                    onPress={startRecording}
+                                >
+                                    {/* recording start button */}
+                                    <Image
+                                        className="rounded-full"
+                                        source={require('../../assets/images/recordingIcon.png')}
+                                        style={{ width: hp(10), height: hp(10) }}
+                                    />
+                                </TouchableOpacity>
+                            )
                     }
                     {
                         messages.length > 0 && (
